@@ -18,10 +18,10 @@ dialog.addEventListener('click', event => {
   if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
 });
 const reasons = [
-  {title:'1. Фокус на речь, а не на правила',text:'80% времени — разговоры. Мы закидываем тебя в языковую среду с первого занятия.',box:'288 999 145 145',alt:'Коллаж об английской речи и общении'},
-  {title:'2. Учим под твой тип памяти',text:'Мы подберем формат: мемы, песни, сценарии из твоего любимого фильма.',box:'1351 1268 237 237',alt:'Музыка, игры и книги на английском',source:'why'},
-  {title:'3. 30 минут в день — это реально',text:'Короткие, но мощные уроки. Живой куратор напомнит, когда ты заленился.',box:'668 715 237 238',alt:'Книги, кофе и 30 минут на английский',source:'why'},
-  {title:'4. Группы по интересам',text:'Не «Beginner 4B», а «English для гиков», «Для переезда» или «Бизнес-лексика для переговоров»',box:'23 1267 237 237',alt:'Игры, карьера, общение и работа',source:'why'}
+  {title:'1. Фокус на речь, а не на правила',text:'80% времени — разговоры. Мы закидываем тебя в языковую среду с первого занятия.',alt:'Коллаж об английской речи и общении'},
+  {title:'2. Учим под твой тип памяти',text:'Мы подберем формат: мемы, песни, сценарии из твоего любимого фильма.',alt:'Музыка, игры и книги на английском'},
+  {title:'3. 30 минут в день — это реально',text:'Короткие, но мощные уроки. Живой куратор напомнит, когда ты заленился.',alt:'Книги, кофе и 30 минут на английский'},
+  {title:'4. Группы по интересам',text:'Не «Beginner 4B», а «English для гиков», «Для переезда» или «Бизнес-лексика для переговоров»',alt:'Игры, карьера, общение и работа'}
 ];
 let activeReason = 0;
 let carouselMoving = false;
@@ -37,13 +37,13 @@ const reasonCards = reasons.map((reason, index) => {
       if (!paragraph) {paragraph = document.createElement('p'); card.querySelector('h3').after(paragraph);}
       paragraph.textContent = reason.text;
     } else if (paragraph) paragraph.remove();
-    const svg = card.querySelector('svg');
-    svg.setAttribute('viewBox', reason.box);
-    svg.setAttribute('aria-label', reason.alt);
-    const image = svg.querySelector('image');
-    image.setAttribute('href', reason.source === 'why' ? 'design/Why,s%20desktop.jpg' : 'design/Desktip2.jpg');
-    image.setAttribute('width', reason.source === 'why' ? '1619' : '720');
-    image.setAttribute('height', reason.source === 'why' ? String(3704 * 1619 / 3906) : '2048.5');
+    const image = card.querySelector('img.collage');
+    image.src = 'assets/reason-' + index + '.webp';
+    image.alt = reason.alt;
+    image.width = 720;
+    image.height = index === 2 ? 723 : 720;
+    image.loading = 'lazy';
+    image.decoding = 'async';
   cardWindow.append(card);
   return card;
 });
@@ -187,7 +187,7 @@ const reviews = {
     text: 'Брала курс как практическое дополнение к университетской теории. Полностью оправдал ожидания: разбор аутентичных материалов помогает освоить контекстуальное использование идиом. Разговорный клуб с носителями эффективно корректирует произношение и интонацию. Программа оптимальна для достижения естественного владения языком. Рекомендую студентам лингвистических направлений.'
   },
   artem: {
-    name: 'Артем', rating: 4, portrait: '1834 23 79 79',
+    name: 'Артём', rating: 4, portrait: '1834 23 79 79',
     text: 'Курс оправдал ожидания в части актуальности контента. Лексический материал базируется на современных кейсах, а не на архаичных учебных пособиях. Практические вебинары с международной группой позволили преодолеть страх спонтанной речи. Ставлю 4, а не 5, поскольку считаю, что блок академической грамматики мог бы быть представлен в большем объёме. В остальном — достойный продукт'
   }
 };
@@ -196,16 +196,6 @@ const isTabletLayout = () => tabletLayout.matches || document.documentElement.cl
 const compactHeroLayout = window.matchMedia('(max-width: 1100px)');
 const usesAutomaticHeroMotion = () => compactHeroLayout.matches || document.documentElement.classList.contains('tablet-preview');
 const phoneLayout = window.matchMedia('(max-width: 599px)');
-const phoneFeaturePhotos = [...document.querySelectorAll('.statistics .feature-media svg, .trial .feature-media svg')].map(photo => ({
-  photo, originalCrop: photo.getAttribute('viewBox'),
-  phoneCrop: photo.closest('.statistics') ? '97 585 184 116' : '97 1204 184 116'
-}));
-function cropPhoneStatisticsPhoto() {
-  phoneFeaturePhotos.forEach(({photo, originalCrop, phoneCrop}) => photo.setAttribute('viewBox', phoneLayout.matches ? phoneCrop : originalCrop));
-}
-phoneLayout.addEventListener('change', cropPhoneStatisticsPhoto);
-cropPhoneStatisticsPhoto();
-
 document.querySelectorAll('[data-review]').forEach(button => {
   const card = button.closest('.review');
   const key = button.dataset.review;

@@ -1,4 +1,5 @@
 .promo-word, .review-collage, .orbit-guide { display: none; }
+.collage-scroll-indicator { display: none; }
   .review-collage { position: relative; display: block; height: 735px; margin-top: 25px; isolation: isolate; }
   .collage-card { position: absolute; z-index: 1; display: flex; flex-direction: column; left: var(--card-x); top: var(--card-y); width: var(--card-width); height: var(--card-height); border-radius: 6px; background: #fff; box-shadow: 0 3px 14px #00000012; overflow: hidden; transform: translate(var(--drift-x,0px),var(--drift-y,0px)) rotate(var(--card-angle)); transition: left 750ms cubic-bezier(.2,.7,.25,1),top 750ms cubic-bezier(.2,.7,.25,1),width 750ms cubic-bezier(.2,.7,.25,1),height 750ms cubic-bezier(.2,.7,.25,1),transform 750ms cubic-bezier(.2,.7,.25,1),opacity 500ms,box-shadow 500ms; }
   .collage-heading { flex-shrink: 0; }
@@ -37,6 +38,10 @@
   .review-collage { margin-top: 25px; }
 }
 @media (max-width: 599px) {
+  .collage-card.is-selected .collage-reading { scrollbar-width: none; }
+  .collage-card.is-selected .collage-reading::-webkit-scrollbar { display: none; }
+  .collage-card.is-selected.has-scrollable-review .collage-scroll-indicator { display: block; position: absolute; z-index: 4; right: 7px; top: var(--review-scroll-top); width: 4px; height: var(--review-scroll-height); border-radius: 4px; background: #e5dfeb; pointer-events: none; }
+  .collage-scroll-indicator span { display: block; width: 100%; height: var(--review-thumb-height); transform: translateY(var(--review-thumb-top)); border-radius: inherit; background: #9c82af; }
   .hero .arrows { display: none; }
   .hero .actions .action-trial { display: none; }
   body { --section-gap: 175px; --callout-gap: 50px; }

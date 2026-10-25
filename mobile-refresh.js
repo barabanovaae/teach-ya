@@ -28,7 +28,6 @@ collage.className = 'review-collage';
 collage.setAttribute('aria-label', 'Отзывы учеников — выбери карточку, чтобы прочитать');
 document.querySelector('.reviews').append(collage);
 const collageAuthors = ['maria', 'dmitry', 'alina', 'artem', 'katya'];
-const collageCrops = {maria:'29 1496 80 80',dmitry:'99 1644 76 76',alina:'309.5 1507 79 79',artem:'568 1560 54 54',katya:'461 1655 97 97'};
 const collagePlaces = [
   {x:2,y:8,w:36,h:194,photo:112,angle:-2},
   {x:53,y:70,w:45,h:236,photo:145,angle:2},
@@ -48,8 +47,18 @@ const desktopReviewHover = matchMedia('(min-width: 1101px) and (hover: hover) an
 let hoveredCollageReview = null;
 const collageEntries = [];
 function updateCollageFade(entry) {
-  const more = entry.reading.scrollHeight - entry.reading.clientHeight - entry.reading.scrollTop > 2;
+  const viewport = entry.reading.clientHeight;
+  const range = Math.max(0, entry.reading.scrollHeight - viewport);
+  const more = range - entry.reading.scrollTop > 2;
   entry.card.classList.toggle('has-more', more);
+  entry.card.classList.toggle('has-scrollable-review', range > 2);
+  // This track stays visible even when the phone hides its system scrollbar.
+  const thumbHeight = Math.min(viewport, Math.max(36, viewport * viewport / Math.max(1, entry.reading.scrollHeight)));
+  const progress = range ? Math.max(0, Math.min(1, entry.reading.scrollTop / range)) : 0;
+  entry.card.style.setProperty('--review-scroll-top', entry.reading.offsetTop + 'px');
+  entry.card.style.setProperty('--review-scroll-height', viewport + 'px');
+  entry.card.style.setProperty('--review-thumb-height', thumbHeight + 'px');
+  entry.card.style.setProperty('--review-thumb-top', progress * (viewport - thumbHeight) + 'px');
 }
 function chooseCollageReview(key, fromHover = false) {
   const origin = collageEntries.find(entry => entry.key === key)?.card.getBoundingClientRect();
@@ -107,16 +116,14 @@ collageAuthors.forEach((key,index) => {
   card.style.setProperty('--card-angle', place.angle + 'deg');
   const header = document.createElement('header');
   header.className = 'collage-heading';
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('viewBox', collageCrops[key]);
-  svg.setAttribute('preserveAspectRatio','xMidYMid slice');
-  svg.setAttribute('aria-hidden','true');
-  svg.classList.add('collage-photo');
-  const portrait = document.createElementNS('http://www.w3.org/2000/svg','image');
-  portrait.setAttribute('href','design/Desktip2.jpg');
-  portrait.setAttribute('width','720');
-  portrait.setAttribute('height','2048.5');
-  svg.append(portrait);
+  const portrait = document.createElement('img');
+  portrait.src = 'assets/portrait-' + key + '.webp';
+  portrait.alt = '';
+  portrait.width = 320;
+  portrait.height = 320;
+  portrait.loading = 'lazy';
+  portrait.decoding = 'async';
+  portrait.classList.add('collage-photo');
   const byline = document.createElement('div');
   byline.className = 'collage-byline';
   const name = document.createElement('h3');
@@ -126,7 +133,7 @@ collageAuthors.forEach((key,index) => {
   stars.textContent = '★'.repeat(data.rating) + '☆'.repeat(5-data.rating);
   stars.setAttribute('aria-label', data.rating + ' из 5');
   byline.append(name,stars);
-  header.append(svg,byline);
+  header.append(portrait,byline);
   const reading = document.createElement('div');
   reading.className = 'collage-reading';
   reading.id = 'collage-text-' + key;
@@ -137,6 +144,10 @@ collageAuthors.forEach((key,index) => {
   const paragraph = document.createElement('p');
   paragraph.textContent = data.text;
   reading.append(paragraph);
+  const scrollIndicator = document.createElement('div');
+  scrollIndicator.className = 'collage-scroll-indicator';
+  scrollIndicator.setAttribute('aria-hidden', 'true');
+  scrollIndicator.append(document.createElement('span'));
   const pick = document.createElement('button');
   pick.className = 'collage-pick';
   pick.type = 'button';
@@ -165,12 +176,14 @@ collageAuthors.forEach((key,index) => {
   close.setAttribute('aria-label','Закрыть отзыв: ' + data.name);
   close.hidden = true;
   close.addEventListener('click',() => {chooseCollageReview(key); pick.focus({preventScroll:true});});
-  card.append(header,reading,pick,close);
+  card.append(header,reading,scrollIndicator,pick,close);
   collage.append(card);
   const entry = {key,card,pick,close,reading};
   collageEntries.push(entry);
   reading.addEventListener('scroll',() => updateCollageFade(entry),{passive:true});
-  new ResizeObserver(() => updateCollageFade(entry)).observe(reading);
+  const readingObserver = new ResizeObserver(() => updateCollageFade(entry));
+  readingObserver.observe(reading);
+  readingObserver.observe(paragraph);
 });
 function arrangeReviewCollage() {
   const places = mobileRefreshMedia.matches ? collagePlaces : wideCollagePlaces;
